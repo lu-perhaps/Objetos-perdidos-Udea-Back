@@ -18,6 +18,7 @@ import java.util.List;
 public class ObjetoService {
 
     private static final int ESTADO_OBJETO_DISPONIBLE = 3;
+    private static final int ESTADO_OBJETO_EN_CUSTODIA = 1;
     private static final int ESTADO_PUBLICACION_PUBLICADO = 11;
     private static final int ESTADO_PUBLICACION_OCULTO = 12;
 
@@ -58,6 +59,8 @@ public class ObjetoService {
                 .findByCorreo(request.getCorreoAdmin().toLowerCase().trim())
                 .orElseThrow(() -> new RuntimeException("Admin no encontrado"));
 
+        boolean publicar = Boolean.TRUE.equals(request.getPublicar());
+
         Objeto objeto = new Objeto();
         objeto.setNombre(request.getNombre());
         objeto.setDescripcionGeneral(request.getDescripcionGeneral());
@@ -67,17 +70,24 @@ public class ObjetoService {
         objeto.setFotografia(request.getFotografia());
         objeto.setIdLugarEncontrado(request.getIdLugarEncontrado());
         objeto.setIdLugarActual(request.getIdLugarActual());
-        objeto.setIdEstado(ESTADO_OBJETO_DISPONIBLE);
+
+        if (publicar) {
+            objeto.setIdEstado(ESTADO_OBJETO_DISPONIBLE);
+        } else {
+            objeto.setIdEstado(ESTADO_OBJETO_EN_CUSTODIA);
+        }
 
         Objeto objetoGuardado = objetoRepository.save(objeto);
 
-        Publicacion publicacion = new Publicacion();
-        publicacion.setIdObjeto(objetoGuardado.getId());
-        publicacion.setFecha(LocalDateTime.now());
-        publicacion.setIdPersonaPublica(admin.getId());
-        publicacion.setIdEstado(ESTADO_PUBLICACION_PUBLICADO);
+        if (publicar) {
+            Publicacion publicacion = new Publicacion();
+            publicacion.setIdObjeto(objetoGuardado.getId());
+            publicacion.setFecha(LocalDateTime.now());
+            publicacion.setIdPersonaPublica(admin.getId());
+            publicacion.setIdEstado(ESTADO_PUBLICACION_PUBLICADO);
 
-        publicacionRepository.save(publicacion);
+            publicacionRepository.save(publicacion);
+        }
 
         return objetoGuardado;
     }

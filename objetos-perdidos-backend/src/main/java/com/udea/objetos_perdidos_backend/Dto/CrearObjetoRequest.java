@@ -13,6 +13,7 @@ public class CrearObjetoRequest {
     private Integer idLugarEncontrado;
     private Integer idLugarActual;
     private String correoAdmin;
+    private Boolean publicar;
 
     public String getNombre() {
         return nombre;
@@ -48,5 +49,9 @@ public class CrearObjetoRequest {
 
     public String getCorreoAdmin() {
         return correoAdmin;
+    }
+
+    public Boolean getPublicar() {
+        return publicar;
     }
 }
