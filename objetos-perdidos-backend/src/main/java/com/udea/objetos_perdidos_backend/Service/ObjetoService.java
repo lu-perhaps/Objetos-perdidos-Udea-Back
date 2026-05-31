@@ -54,6 +54,25 @@ public class ObjetoService {
                 .toList();
     }
 
+    public List<ObjetoPublicadoDTO> listarObjetosAdmin() {
+        return objetoRepository.listarObjetosAdmin()
+                .stream()
+                .map(objeto -> new ObjetoPublicadoDTO(
+                        objeto.getId(),
+                        objeto.getNombre(),
+                        objeto.getDescripcionGeneral(),
+                        objeto.getDescripcionDetallada(),
+                        objeto.getFechaHallazgo(),
+                        objeto.getFotografia(),
+                        objeto.getIdEstado(),
+                        objeto.getEstado(),
+                        objeto.getCategoria(),
+                        objeto.getLugarEncontrado(),
+                        objeto.getLugarActual()
+                ))
+                .toList();
+    }
+
     public Objeto crearObjetoYPublicar(CrearObjetoRequest request) {
         Persona admin = personaRepository
                 .findByCorreo(request.getCorreoAdmin().toLowerCase().trim())

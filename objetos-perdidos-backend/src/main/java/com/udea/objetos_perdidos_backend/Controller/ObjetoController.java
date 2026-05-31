@@ -24,6 +24,11 @@ public class ObjetoController {
         return objetoService.listarObjetosPublicados();
     }
 
+    @GetMapping("/admin")
+    public List<ObjetoPublicadoDTO> listarObjetosAdmin() {
+        return objetoService.listarObjetosAdmin();
+    }
+
     @PostMapping
     public Objeto crearObjeto(@RequestBody CrearObjetoRequest request) {
         return objetoService.crearObjetoYPublicar(request);

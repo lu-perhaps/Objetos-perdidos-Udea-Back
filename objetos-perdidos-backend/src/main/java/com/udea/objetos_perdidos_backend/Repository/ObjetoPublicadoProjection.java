@@ -21,4 +21,8 @@ public interface ObjetoPublicadoProjection {
     String getLugarEncontrado();
 
     String getLugarActual();
+
+    Integer getIdEstado();
+
+    String getEstado();
 }

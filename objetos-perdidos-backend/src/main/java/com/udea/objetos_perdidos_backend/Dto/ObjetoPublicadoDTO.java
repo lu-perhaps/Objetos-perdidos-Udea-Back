@@ -13,6 +13,8 @@ public class ObjetoPublicadoDTO {
     private String categoria;
     private String lugarEncontrado;
     private String lugarActual;
+    private Integer idEstado;
+    private String estado;
 
     public ObjetoPublicadoDTO(
             Integer id,
@@ -31,6 +33,32 @@ public class ObjetoPublicadoDTO {
         this.descripcionDetallada = descripcionDetallada;
         this.fechaHallazgo = fechaHallazgo;
         this.fotografia = fotografia;
+        this.categoria = categoria;
+        this.lugarEncontrado = lugarEncontrado;
+        this.lugarActual = lugarActual;
+    }
+
+    public ObjetoPublicadoDTO(
+            Integer id,
+            String nombre,
+            String descripcionGeneral,
+            String descripcionDetallada,
+            LocalDate fechaHallazgo,
+            String fotografia,
+            Integer idEstado,
+            String estado,
+            String categoria,
+            String lugarEncontrado,
+            String lugarActual
+    ) {
+        this.id = id;
+        this.nombre = nombre;
+        this.descripcionGeneral = descripcionGeneral;
+        this.descripcionDetallada = descripcionDetallada;
+        this.fechaHallazgo = fechaHallazgo;
+        this.fotografia = fotografia;
+        this.idEstado = idEstado;
+        this.estado = estado;
         this.categoria = categoria;
         this.lugarEncontrado = lugarEncontrado;
         this.lugarActual = lugarActual;
@@ -70,5 +98,13 @@ public class ObjetoPublicadoDTO {
 
     public String getLugarActual() {
         return lugarActual;
+    }
+
+    public Integer getIdEstado() {
+        return idEstado;
+    }
+
+    public String getEstado() {
+        return estado;
     }
 }
