@@ -3,6 +3,7 @@ package com.udea.objetos_perdidos_backend.Controller;
 import com.udea.objetos_perdidos_backend.Dto.SolicitudAdminDTO;
 import com.udea.objetos_perdidos_backend.Dto.SolicitudReclamoRequest;
 import com.udea.objetos_perdidos_backend.Model.SolicitudReclamo;
+import com.udea.objetos_perdidos_backend.Dto.EntregarSolicitudRequest;
 import com.udea.objetos_perdidos_backend.Service.SolicitudReclamoService;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,5 +38,10 @@ public class SolicitudReclamoController {
     @PutMapping("/{id}/rechazar")
     public SolicitudReclamo rechazarSolicitud(@PathVariable Integer id) {
         return solicitudService.rechazarSolicitud(id);
+    }
+
+    @PutMapping("/{id}/entregar")
+    public SolicitudReclamo entregarSolicitud(@PathVariable Integer id, @RequestBody EntregarSolicitudRequest request) {
+        return solicitudService.entregarSolicitud(id, request);
     }
 }
