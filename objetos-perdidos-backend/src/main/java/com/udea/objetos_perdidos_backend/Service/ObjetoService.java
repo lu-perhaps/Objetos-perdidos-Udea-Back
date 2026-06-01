@@ -110,6 +110,27 @@ public class ObjetoService {
 
         return objetoGuardado;
     }
+    
+    public ObjetoPublicadoDTO obtenerObjetoPorId(Integer id) {
+        ObjetoPublicadoProjection objeto = objetoRepository.obtenerObjetoPorId(id);
+        if (objeto == null) {
+            throw new RuntimeException("Objeto no encontrado");
+        }
+
+        return new ObjetoPublicadoDTO(
+                objeto.getId(),
+                objeto.getNombre(),
+                objeto.getDescripcionGeneral(),
+                objeto.getDescripcionDetallada(),
+                objeto.getFechaHallazgo(),
+                objeto.getFotografia(),
+                objeto.getIdEstado(),
+                objeto.getEstado(),
+                objeto.getCategoria(),
+                objeto.getLugarEncontrado(),
+                objeto.getLugarActual()
+        );
+    }
     public Objeto actualizarObjeto(Integer id, ActualizarObjetoRequest request) {
         Objeto objeto = objetoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Objeto no encontrado"));

@@ -29,6 +29,11 @@ public class ObjetoController {
         return objetoService.listarObjetosAdmin();
     }
 
+    @GetMapping("/{id}")
+    public ObjetoPublicadoDTO obtenerObjetoPorId(@PathVariable Integer id) {
+        return objetoService.obtenerObjetoPorId(id);
+    }
+
     @PostMapping
     public Objeto crearObjeto(@RequestBody CrearObjetoRequest request) {
         return objetoService.crearObjetoYPublicar(request);
