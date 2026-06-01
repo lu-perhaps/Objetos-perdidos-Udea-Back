@@ -16,6 +16,7 @@ public class ReportePerdidaService {
 
     private static final int ESTADO_REPORTE_PENDIENTE = 6;
     private static final int ESTADO_REPORTE_RESUELTO = 7;
+    private static final int ESTADO_REPORTE_ANULADO = 22;
 
     private final ReportePerdidaRepository reporteRepository;
     private final PersonaRepository personaRepository;
@@ -58,5 +59,34 @@ public class ReportePerdidaService {
                         r.getLugar()
                 ))
                 .toList();
+    }
+
+    public List<ReporteAdminDTO> listarReportesUsuario(String correo) {
+        List<ReporteAdminProjection> reportes = reporteRepository.listarReportesUsuario(correo.toLowerCase().trim());
+
+        return reportes.stream()
+                .map(r -> new ReporteAdminDTO(
+                        r.getId(),
+                        r.getDescripcionObjeto(),
+                        r.getFechaReporte(),
+                        r.getFechaAproxPerdida(),
+                        r.getIdEstado(),
+                        r.getCorreoUsuario(),
+                        r.getNombreUsuario(),
+                        r.getLugar()
+                ))
+                .toList();
+    }
+
+    public ReportePerdida anularReporte(Integer id) {
+        ReportePerdida reporte = reporteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reporte no encontrado"));
+
+        if (!reporte.getIdEstado().equals(ESTADO_REPORTE_PENDIENTE)) {
+            throw new RuntimeException("Solo se pueden anular reportes pendientes");
+        }
+
+        reporte.setIdEstado(ESTADO_REPORTE_ANULADO);
+        return reporteRepository.save(reporte);
     }
 }

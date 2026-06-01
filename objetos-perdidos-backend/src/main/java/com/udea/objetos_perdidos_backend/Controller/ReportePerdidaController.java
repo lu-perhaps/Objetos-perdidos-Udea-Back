@@ -21,6 +21,17 @@ public class ReportePerdidaController {
     public List<ReporteAdminDTO> listarReportesAdmin() {
         return reporteService.listarReportesAdmin();
     }
+
+    @GetMapping("/usuario/{correo}")
+    public List<ReporteAdminDTO> listarReportesUsuario(@PathVariable String correo) {
+        return reporteService.listarReportesUsuario(correo);
+    }
+
+    @PutMapping("/{id}/anular")
+    public ReportePerdida anularReporte(@PathVariable Integer id) {
+        return reporteService.anularReporte(id);
+    }
+
     @PostMapping
     public ReportePerdida crearReporte(@RequestBody ReportePerdidaRequest request) {
         return reporteService.crearReporte(request);

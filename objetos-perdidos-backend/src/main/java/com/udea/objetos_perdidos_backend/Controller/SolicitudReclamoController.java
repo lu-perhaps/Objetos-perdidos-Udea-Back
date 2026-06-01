@@ -30,6 +30,11 @@ public class SolicitudReclamoController {
         return solicitudService.listarSolicitudesAdmin();
     }
 
+    @GetMapping("/usuario/{correo}")
+    public List<SolicitudAdminDTO> listarSolicitudesUsuario(@PathVariable String correo) {
+        return solicitudService.listarSolicitudesUsuario(correo);
+    }
+
     @PutMapping("/{id}/aprobar")
     public SolicitudReclamo aprobarSolicitud(@PathVariable Integer id) {
         return solicitudService.aprobarSolicitud(id);
@@ -38,6 +43,11 @@ public class SolicitudReclamoController {
     @PutMapping("/{id}/rechazar")
     public SolicitudReclamo rechazarSolicitud(@PathVariable Integer id) {
         return solicitudService.rechazarSolicitud(id);
+    }
+
+    @PutMapping("/{id}/anular")
+    public SolicitudReclamo anularSolicitud(@PathVariable Integer id) {
+        return solicitudService.anularSolicitud(id);
     }
 
     @PutMapping("/{id}/entregar")

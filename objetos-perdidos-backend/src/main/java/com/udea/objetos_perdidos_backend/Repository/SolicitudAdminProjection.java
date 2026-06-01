@@ -20,4 +20,8 @@ public interface SolicitudAdminProjection {
     String getCorreoUsuario();
 
     String getLugar();
+
+    String getFotografia();
+
+    String getDescripcionObjeto();
 }

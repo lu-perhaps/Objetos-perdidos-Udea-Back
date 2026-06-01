@@ -13,6 +13,8 @@ public class SolicitudAdminDTO {
     private String objeto;
     private String correoUsuario;
     private String lugar;
+    private String fotografia;
+    private String descripcionObjeto;
 
     public SolicitudAdminDTO(
             Integer id,
@@ -32,6 +34,30 @@ public class SolicitudAdminDTO {
         this.objeto = objeto;
         this.correoUsuario = correoUsuario;
         this.lugar = lugar;
+    }
+
+    public SolicitudAdminDTO(
+            Integer id,
+            String descripcion,
+            LocalDateTime fecha,
+            LocalDate fechaAproxPerdida,
+            Integer idEstado,
+            String objeto,
+            String correoUsuario,
+            String lugar,
+            String fotografia,
+            String descripcionObjeto
+    ) {
+        this.id = id;
+        this.descripcion = descripcion;
+        this.fecha = fecha;
+        this.fechaAproxPerdida = fechaAproxPerdida;
+        this.idEstado = idEstado;
+        this.objeto = objeto;
+        this.correoUsuario = correoUsuario;
+        this.lugar = lugar;
+        this.fotografia = fotografia;
+        this.descripcionObjeto = descripcionObjeto;
     }
 
     public Integer getId() {
@@ -64,5 +90,13 @@ public class SolicitudAdminDTO {
 
     public String getLugar() {
         return lugar;
+    }
+
+    public String getFotografia() {
+        return fotografia;
+    }
+
+    public String getDescripcionObjeto() {
+        return descripcionObjeto;
     }
 }

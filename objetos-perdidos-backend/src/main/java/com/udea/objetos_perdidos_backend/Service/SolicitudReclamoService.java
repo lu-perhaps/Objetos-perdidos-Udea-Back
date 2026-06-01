@@ -26,6 +26,7 @@ public class SolicitudReclamoService {
     private static final int ESTADO_APROBADO = 9;
     private static final int ESTADO_RECHAZADO = 10;
     private static final int ESTADO_ENTREGADO = 2;
+    private static final int ESTADO_ANULADO = 13;
     private static final int ESTADO_OBJETO_EN_CUSTODIA = 1;
     private static final int ESTADO_OBJETO_ENTREGADO = 2;
     private static final int ESTADO_PUBLICACION_OCULTA = 12;
@@ -84,7 +85,23 @@ public class SolicitudReclamoService {
                 ))
                 .toList();
     }
-
+    public List<SolicitudAdminDTO> listarSolicitudesUsuario(String correo) {
+        return solicitudRepository.listarSolicitudesUsuario(correo.toLowerCase().trim())
+                .stream()
+                .map(s -> new SolicitudAdminDTO(
+                        s.getId(),
+                        s.getDescripcion(),
+                        s.getFecha(),
+                        s.getFechaAproxPerdida(),
+                        s.getIdEstado(),
+                        s.getObjeto(),
+                        s.getCorreoUsuario(),
+                        s.getLugar(),
+                        s.getFotografia(),
+                        s.getDescripcionObjeto()
+                ))
+                .toList();
+    }
     public SolicitudReclamo aprobarSolicitud(Integer id) {
         SolicitudReclamo solicitud = solicitudRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
@@ -114,6 +131,18 @@ public class SolicitudReclamoService {
                 .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
 
         solicitud.setIdEstado(ESTADO_RECHAZADO);
+        return solicitudRepository.save(solicitud);
+    }
+
+    public SolicitudReclamo anularSolicitud(Integer id) {
+        SolicitudReclamo solicitud = solicitudRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+
+        if (!solicitud.getIdEstado().equals(ESTADO_PENDIENTE)) {
+            throw new RuntimeException("Solo se pueden anular solicitudes pendientes");
+        }
+
+        solicitud.setIdEstado(ESTADO_ANULADO);
         return solicitudRepository.save(solicitud);
     }
 
