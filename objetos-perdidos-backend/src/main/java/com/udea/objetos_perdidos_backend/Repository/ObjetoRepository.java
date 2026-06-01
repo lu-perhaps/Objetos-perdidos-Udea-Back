@@ -73,4 +73,30 @@ public interface ObjetoRepository extends JpaRepository<Objeto, Integer> {
             WHERE o.id = ?1
             """, nativeQuery = true)
     ObjetoPublicadoProjection obtenerObjetoPorId(Integer id);
+
+    @Query(value = """
+            SELECT
+              o.id AS id,
+              o.nombre AS nombre,
+              o.descripcion_general AS descripcionGeneral,
+              o.descripcion_detallada AS descripcionDetallada,
+              o.fecha_hallazgo AS fechaHallazgo,
+              o.fotografia AS fotografia,
+              o.id_estado AS idEstado,
+              e.nombre AS estado,
+              c.nombre AS categoria,
+              c.tiempo_maximo_almacenamiento AS tiempoMaximoAlmacenamiento,
+              le.nombre AS lugarEncontrado,
+              la.nombre AS lugarActual
+            FROM tbl_objeto o
+            LEFT JOIN tbl_estado e ON e.id = o.id_estado
+            LEFT JOIN tbl_categoria c ON c.id = o.id_categoria
+            LEFT JOIN tbl_lugar le ON le.id = o.id_lugar_encontrado
+            LEFT JOIN tbl_lugar la ON la.id = o.id_lugar_actual
+            WHERE o.id_estado IN (1, 3)
+              AND o.fecha_hallazgo IS NOT NULL
+              AND c.tiempo_maximo_almacenamiento IS NOT NULL
+              AND (o.fecha_hallazgo + (c.tiempo_maximo_almacenamiento || ' days')::interval) < NOW()
+            """, nativeQuery = true)
+    List<ObjetoPublicadoProjection> listarObjetosVencidos();
 }

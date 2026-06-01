@@ -25,4 +25,6 @@ public interface ObjetoPublicadoProjection {
     Integer getIdEstado();
 
     String getEstado();
+
+    Integer getTiempoMaximoAlmacenamiento();
 }

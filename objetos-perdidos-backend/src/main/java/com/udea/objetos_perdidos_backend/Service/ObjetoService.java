@@ -19,6 +19,8 @@ public class ObjetoService {
 
     private static final int ESTADO_OBJETO_DISPONIBLE = 3;
     private static final int ESTADO_OBJETO_EN_CUSTODIA = 1;
+    private static final int ESTADO_OBJETO_DONADO = 14;
+    private static final int ESTADO_OBJETO_DESECHADO = 15;
     private static final int ESTADO_PUBLICACION_PUBLICADO = 11;
     private static final int ESTADO_PUBLICACION_OCULTO = 12;
 
@@ -69,6 +71,26 @@ public class ObjetoService {
                         objeto.getCategoria(),
                         objeto.getLugarEncontrado(),
                         objeto.getLugarActual()
+                ))
+                .toList();
+    }
+
+    public List<ObjetoPublicadoDTO> listarObjetosVencidos() {
+        return objetoRepository.listarObjetosVencidos()
+                .stream()
+                .map(objeto -> new ObjetoPublicadoDTO(
+                        objeto.getId(),
+                        objeto.getNombre(),
+                        objeto.getDescripcionGeneral(),
+                        objeto.getDescripcionDetallada(),
+                        objeto.getFechaHallazgo(),
+                        objeto.getFotografia(),
+                        objeto.getIdEstado(),
+                        objeto.getEstado(),
+                        objeto.getCategoria(),
+                        objeto.getLugarEncontrado(),
+                        objeto.getLugarActual(),
+                        objeto.getTiempoMaximoAlmacenamiento()
                 ))
                 .toList();
     }
@@ -146,6 +168,26 @@ public class ObjetoService {
 
         return objetoRepository.save(objeto);
     }   
+
+    public Objeto registrarDisposicionFinal(Integer idObjeto, Integer nuevoEstado) {
+        if (!nuevoEstado.equals(ESTADO_OBJETO_DONADO)
+                && !nuevoEstado.equals(ESTADO_OBJETO_DESECHADO)) {
+            throw new RuntimeException("Estado de disposición final no válido");
+        }
+
+        Objeto objeto = objetoRepository.findById(idObjeto)
+                .orElseThrow(() -> new RuntimeException("Objeto no encontrado"));
+
+        objeto.setIdEstado(nuevoEstado);
+
+        List<Publicacion> publicaciones = publicacionRepository.findByIdObjeto(idObjeto);
+        for (Publicacion publicacion : publicaciones) {
+            publicacion.setIdEstado(ESTADO_PUBLICACION_OCULTO);
+            publicacionRepository.save(publicacion);
+        }
+
+        return objetoRepository.save(objeto);
+    }
 
     public void ocultarObjeto(Integer id) {
         Objeto objeto = objetoRepository.findById(id)

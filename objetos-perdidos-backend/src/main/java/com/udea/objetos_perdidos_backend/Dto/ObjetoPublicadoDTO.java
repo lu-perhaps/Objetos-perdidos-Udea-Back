@@ -15,6 +15,7 @@ public class ObjetoPublicadoDTO {
     private String lugarActual;
     private Integer idEstado;
     private String estado;
+    private Integer tiempoMaximoAlmacenamiento;
 
     public ObjetoPublicadoDTO(
             Integer id,
@@ -36,6 +37,34 @@ public class ObjetoPublicadoDTO {
         this.categoria = categoria;
         this.lugarEncontrado = lugarEncontrado;
         this.lugarActual = lugarActual;
+    }
+
+    public ObjetoPublicadoDTO(
+            Integer id,
+            String nombre,
+            String descripcionGeneral,
+            String descripcionDetallada,
+            LocalDate fechaHallazgo,
+            String fotografia,
+            Integer idEstado,
+            String estado,
+            String categoria,
+            String lugarEncontrado,
+            String lugarActual,
+            Integer tiempoMaximoAlmacenamiento
+    ) {
+        this.id = id;
+        this.nombre = nombre;
+        this.descripcionGeneral = descripcionGeneral;
+        this.descripcionDetallada = descripcionDetallada;
+        this.fechaHallazgo = fechaHallazgo;
+        this.fotografia = fotografia;
+        this.idEstado = idEstado;
+        this.estado = estado;
+        this.categoria = categoria;
+        this.lugarEncontrado = lugarEncontrado;
+        this.lugarActual = lugarActual;
+        this.tiempoMaximoAlmacenamiento = tiempoMaximoAlmacenamiento;
     }
 
     public ObjetoPublicadoDTO(
@@ -106,5 +135,9 @@ public class ObjetoPublicadoDTO {
 
     public String getEstado() {
         return estado;
+    }
+
+    public Integer getTiempoMaximoAlmacenamiento() {
+        return tiempoMaximoAlmacenamiento;
     }
 }

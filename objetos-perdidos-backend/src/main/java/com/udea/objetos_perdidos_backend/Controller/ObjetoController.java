@@ -28,7 +28,20 @@ public class ObjetoController {
     public List<ObjetoPublicadoDTO> listarObjetosAdmin() {
         return objetoService.listarObjetosAdmin();
     }
+        @GetMapping("/vencidos")
+    public List<ObjetoPublicadoDTO> listarObjetosVencidos() {
+        return objetoService.listarObjetosVencidos();
+    }
 
+    @PutMapping("/{id}/donar")
+    public Objeto donarObjeto(@PathVariable Integer id) {
+        return objetoService.registrarDisposicionFinal(id, 14);
+    }
+
+    @PutMapping("/{id}/desechar")
+    public Objeto desecharObjeto(@PathVariable Integer id) {
+        return objetoService.registrarDisposicionFinal(id, 15);
+    }
     @GetMapping("/{id}")
     public ObjetoPublicadoDTO obtenerObjetoPorId(@PathVariable Integer id) {
         return objetoService.obtenerObjetoPorId(id);
