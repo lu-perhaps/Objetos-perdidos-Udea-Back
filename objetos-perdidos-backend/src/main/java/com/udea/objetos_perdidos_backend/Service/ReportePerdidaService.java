@@ -14,7 +14,8 @@ import java.time.LocalDateTime;
 @Service
 public class ReportePerdidaService {
 
-    private static final int ESTADO_PENDIENTE = 8;
+    private static final int ESTADO_REPORTE_PENDIENTE = 6;
+    private static final int ESTADO_REPORTE_RESUELTO = 7;
 
     private final ReportePerdidaRepository reporteRepository;
     private final PersonaRepository personaRepository;
@@ -38,7 +39,7 @@ public class ReportePerdidaService {
         reporte.setFechaAproxPerdida(request.getFechaAproxPerdida());
         reporte.setIdLugarAproxPerdida(request.getIdLugarAproxPerdida());
         reporte.setIdPersona(persona.getId());
-        reporte.setIdEstado(ESTADO_PENDIENTE);
+        reporte.setIdEstado(ESTADO_REPORTE_PENDIENTE);
 
         return reporteRepository.save(reporte);
     }

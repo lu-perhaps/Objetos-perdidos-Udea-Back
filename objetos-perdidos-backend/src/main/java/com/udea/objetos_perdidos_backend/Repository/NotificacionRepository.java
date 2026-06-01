@@ -22,4 +22,8 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Inte
             ORDER BY n.fecha_envio DESC
             """, nativeQuery = true)
     List<NotificacionProjection> listarPorCorreo(String correo);
+
+    List<Notificacion> findByIdPersonaRecibe(Integer idPersonaRecibe);
+
+    void deleteByIdPersonaRecibe(Integer idPersonaRecibe);
 }

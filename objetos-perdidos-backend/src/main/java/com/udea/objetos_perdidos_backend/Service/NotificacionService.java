@@ -4,6 +4,8 @@ import com.udea.objetos_perdidos_backend.Dto.NotificacionDTO;
 import com.udea.objetos_perdidos_backend.Model.Notificacion;
 import com.udea.objetos_perdidos_backend.Repository.NotificacionProjection;
 import com.udea.objetos_perdidos_backend.Repository.NotificacionRepository;
+import com.udea.objetos_perdidos_backend.Repository.PersonaRepository;
+import com.udea.objetos_perdidos_backend.Model.Persona;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,9 +14,11 @@ import java.util.List;
 public class NotificacionService {
 
     private final NotificacionRepository notificacionRepository;
+    private final PersonaRepository personaRepository;
 
-    public NotificacionService(NotificacionRepository notificacionRepository) {
+    public NotificacionService(NotificacionRepository notificacionRepository, PersonaRepository personaRepository) {
         this.notificacionRepository = notificacionRepository;
+        this.personaRepository = personaRepository;
     }
 
     public List<NotificacionDTO> listarPorCorreo(String correo) {
@@ -36,5 +40,19 @@ public class NotificacionService {
 
         notificacion.setLeida(true);
         return notificacionRepository.save(notificacion);
+    }
+
+    public void borrarNotificacion(Integer id) {
+        if (!notificacionRepository.existsById(id)) {
+            throw new RuntimeException("Notificación no encontrada");
+        }
+        notificacionRepository.deleteById(id);
+    }
+
+    public void borrarNotificacionesPorCorreo(String correo) {
+        Persona persona = personaRepository.findByCorreo(correo.toLowerCase().trim())
+                .orElseThrow(() -> new RuntimeException("Persona no encontrada"));
+
+        notificacionRepository.deleteByIdPersonaRecibe(persona.getId());
     }
 }

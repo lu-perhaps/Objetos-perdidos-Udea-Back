@@ -27,4 +27,14 @@ public class NotificacionController {
     public Notificacion marcarComoLeida(@PathVariable Integer id) {
         return notificacionService.marcarComoLeida(id);
     }
+
+    @DeleteMapping("/{id}")
+    public void borrarNotificacion(@PathVariable Integer id) {
+        notificacionService.borrarNotificacion(id);
+    }
+
+    @DeleteMapping("/persona/{correo}")
+    public void borrarNotificacionesPorCorreo(@PathVariable String correo) {
+        notificacionService.borrarNotificacionesPorCorreo(correo);
+    }
 }
