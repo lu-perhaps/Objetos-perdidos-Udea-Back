@@ -200,4 +200,11 @@ public class ObjetoService {
             publicacionRepository.save(publicacion);
         }
     }
+    public Objeto actualizarFotografia(Integer idObjeto, String url) {
+        Objeto objeto = objetoRepository.findById(idObjeto)
+                .orElseThrow(() -> new RuntimeException("Objeto no encontrado"));
+
+        objeto.setFotografia(url);
+        return objetoRepository.save(objeto);
+    }
 }

@@ -7,6 +7,7 @@ import com.udea.objetos_perdidos_backend.Service.ObjetoService;
 import org.springframework.web.bind.annotation.*;
 import com.udea.objetos_perdidos_backend.Dto.ActualizarObjetoRequest;
 import java.util.List;
+import com.udea.objetos_perdidos_backend.Dto.ActualizarFotografiaRequest;
 
 @RestController
 @RequestMapping("/api/objetos")
@@ -50,6 +51,13 @@ public class ObjetoController {
     @PostMapping
     public Objeto crearObjeto(@RequestBody CrearObjetoRequest request) {
         return objetoService.crearObjetoYPublicar(request);
+    }
+    @PutMapping("/{id}/fotografia")
+    public Objeto actualizarFotografia(
+            @PathVariable Integer id,
+            @RequestBody ActualizarFotografiaRequest request
+    ) {
+        return objetoService.actualizarFotografia(id, request.getUrl());
     }
     @PutMapping("/{id}")
     public Objeto actualizarObjeto(
