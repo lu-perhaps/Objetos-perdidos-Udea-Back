@@ -58,7 +58,10 @@ public class ObjetoController {
     ) {
         return objetoService.actualizarObjeto(id, request);
     }
-
+    @PutMapping("/{id}/ocultar-publicacion")
+    public void ocultarPublicacion(@PathVariable Integer id) {
+        objetoService.ocultarObjeto(id);
+    }
     @DeleteMapping("/{id}")
     public void ocultarObjeto(@PathVariable Integer id) {
         objetoService.ocultarObjeto(id);
