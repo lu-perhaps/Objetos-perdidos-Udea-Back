@@ -68,7 +68,7 @@ public class SolicitudReclamoService {
         return solicitudRepository.save(solicitud);
     }
 
-    public List<SolicitudAdminDTO> listarSolicitudesAdmin() {
+     public List<SolicitudAdminDTO> listarSolicitudesAdmin() {
         List<SolicitudAdminProjection> solicitudes =
                 solicitudRepository.listarSolicitudesAdmin();
 
@@ -79,13 +79,17 @@ public class SolicitudReclamoService {
                         s.getFecha(),
                         s.getFechaAproxPerdida(),
                         s.getIdEstado(),
+                        s.getIdReporte(),
                         s.getObjeto(),
+                        s.getFotografia(),
+                        s.getDescripcionObjeto(),
                         s.getCorreoUsuario(),
                         s.getLugar()
                 ))
                 .toList();
-    }
-    public List<SolicitudAdminDTO> listarSolicitudesUsuario(String correo) {
+}
+
+     public List<SolicitudAdminDTO> listarSolicitudesUsuario(String correo) {
         return solicitudRepository.listarSolicitudesUsuario(correo.toLowerCase().trim())
                 .stream()
                 .map(s -> new SolicitudAdminDTO(
@@ -94,14 +98,15 @@ public class SolicitudReclamoService {
                         s.getFecha(),
                         s.getFechaAproxPerdida(),
                         s.getIdEstado(),
+                        s.getIdReporte(),
                         s.getObjeto(),
-                        s.getCorreoUsuario(),
-                        s.getLugar(),
                         s.getFotografia(),
-                        s.getDescripcionObjeto()
+                        s.getDescripcionObjeto(),
+                        s.getCorreoUsuario(),
+                        s.getLugar()
                 ))
                 .toList();
-    }
+        }
     public SolicitudReclamo aprobarSolicitud(Integer id) {
         SolicitudReclamo solicitud = solicitudRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));

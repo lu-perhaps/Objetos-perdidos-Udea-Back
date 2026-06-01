@@ -3,13 +3,14 @@ package com.udea.objetos_perdidos_backend.Repository;
 import com.udea.objetos_perdidos_backend.Model.SolicitudReclamo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+
 import java.util.Optional;
 import java.util.List;
 
-
 public interface SolicitudReclamoRepository extends JpaRepository<SolicitudReclamo, Integer> {
+
     Optional<SolicitudReclamo> findByIdReporte(Integer idReporte);
-    
+
     @Query(value = """
             SELECT
                 s.id AS id,
@@ -17,7 +18,10 @@ public interface SolicitudReclamoRepository extends JpaRepository<SolicitudRecla
                 s.fecha AS fecha,
                 s.fecha_aprox_perdida AS "fechaAproxPerdida",
                 s.id_estado AS "idEstado",
+                s.id_reporte AS "idReporte",
                 o.nombre AS objeto,
+                o.fotografia AS fotografia,
+                o.descripcion_general AS "descripcionObjeto",
                 p.correo AS "correoUsuario",
                 l.nombre AS lugar
             FROM tbl_solicitud_reclamo s
@@ -35,6 +39,7 @@ public interface SolicitudReclamoRepository extends JpaRepository<SolicitudRecla
                 s.fecha AS fecha,
                 s.fecha_aprox_perdida AS "fechaAproxPerdida",
                 s.id_estado AS "idEstado",
+                s.id_reporte AS "idReporte",
                 o.nombre AS objeto,
                 o.fotografia AS fotografia,
                 o.descripcion_general AS "descripcionObjeto",

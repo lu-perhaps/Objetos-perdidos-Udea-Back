@@ -10,11 +10,12 @@ public class SolicitudAdminDTO {
     private LocalDateTime fecha;
     private LocalDate fechaAproxPerdida;
     private Integer idEstado;
+    private Integer idReporte;
     private String objeto;
-    private String correoUsuario;
-    private String lugar;
     private String fotografia;
     private String descripcionObjeto;
+    private String correoUsuario;
+    private String lugar;
 
     public SolicitudAdminDTO(
             Integer id,
@@ -42,22 +43,24 @@ public class SolicitudAdminDTO {
             LocalDateTime fecha,
             LocalDate fechaAproxPerdida,
             Integer idEstado,
+            Integer idReporte,
             String objeto,
-            String correoUsuario,
-            String lugar,
             String fotografia,
-            String descripcionObjeto
+            String descripcionObjeto,
+            String correoUsuario,
+            String lugar
     ) {
         this.id = id;
         this.descripcion = descripcion;
         this.fecha = fecha;
         this.fechaAproxPerdida = fechaAproxPerdida;
         this.idEstado = idEstado;
+        this.idReporte = idReporte;
         this.objeto = objeto;
-        this.correoUsuario = correoUsuario;
-        this.lugar = lugar;
         this.fotografia = fotografia;
         this.descripcionObjeto = descripcionObjeto;
+        this.correoUsuario = correoUsuario;
+        this.lugar = lugar;
     }
 
     public Integer getId() {
@@ -80,16 +83,12 @@ public class SolicitudAdminDTO {
         return idEstado;
     }
 
+    public Integer getIdReporte() {
+        return idReporte;
+    }
+
     public String getObjeto() {
         return objeto;
-    }
-
-    public String getCorreoUsuario() {
-        return correoUsuario;
-    }
-
-    public String getLugar() {
-        return lugar;
     }
 
     public String getFotografia() {
@@ -98,5 +97,13 @@ public class SolicitudAdminDTO {
 
     public String getDescripcionObjeto() {
         return descripcionObjeto;
+    }
+
+    public String getCorreoUsuario() {
+        return correoUsuario;
+    }
+
+    public String getLugar() {
+        return lugar;
     }
 }

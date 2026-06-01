@@ -15,13 +15,15 @@ public interface SolicitudAdminProjection {
 
     Integer getIdEstado();
 
+    Integer getIdReporte();
+
     String getObjeto();
-
-    String getCorreoUsuario();
-
-    String getLugar();
 
     String getFotografia();
 
     String getDescripcionObjeto();
+
+    String getCorreoUsuario();
+
+    String getLugar();
 }
