@@ -23,11 +23,11 @@ public interface SolicitudReclamoRepository extends JpaRepository<SolicitudRecla
                 o.fotografia AS fotografia,
                 o.descripcion_general AS "descripcionObjeto",
                 p.correo AS "correoUsuario",
-                l.nombre AS lugar
+                la.nombre AS lugar
             FROM tbl_solicitud_reclamo s
             INNER JOIN tbl_objeto o ON o.id = s.id_objeto
             INNER JOIN tbl_persona p ON p.id = s.id_persona
-            LEFT JOIN tbl_lugar l ON l.id = s.id_lugar_aprox_perdida
+            LEFT JOIN tbl_lugar la ON la.id = o.id_lugar_actual
             ORDER BY s.fecha DESC
             """, nativeQuery = true)
     List<SolicitudAdminProjection> listarSolicitudesAdmin();
@@ -44,11 +44,11 @@ public interface SolicitudReclamoRepository extends JpaRepository<SolicitudRecla
                 o.fotografia AS fotografia,
                 o.descripcion_general AS "descripcionObjeto",
                 p.correo AS "correoUsuario",
-                l.nombre AS lugar
+                la.nombre AS lugar
             FROM tbl_solicitud_reclamo s
             INNER JOIN tbl_objeto o ON o.id = s.id_objeto
             INNER JOIN tbl_persona p ON p.id = s.id_persona
-            LEFT JOIN tbl_lugar l ON l.id = s.id_lugar_aprox_perdida
+            LEFT JOIN tbl_lugar la ON la.id = o.id_lugar_actual
             WHERE LOWER(p.correo) = LOWER(?1)
             ORDER BY s.fecha DESC
             """, nativeQuery = true)
