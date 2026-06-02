@@ -1,34 +1,39 @@
 package com.udea.objetos_perdidos_backend.Service;
 
 import com.udea.objetos_perdidos_backend.Dto.ReportePerdidaRequest;
+import com.udea.objetos_perdidos_backend.Dto.ReporteAdminDTO;
 import com.udea.objetos_perdidos_backend.Model.Persona;
 import com.udea.objetos_perdidos_backend.Model.ReportePerdida;
 import com.udea.objetos_perdidos_backend.Repository.PersonaRepository;
+import com.udea.objetos_perdidos_backend.Repository.ReporteAdminProjection;
 import com.udea.objetos_perdidos_backend.Repository.ReportePerdidaRepository;
 import org.springframework.stereotype.Service;
-import com.udea.objetos_perdidos_backend.Dto.ReporteAdminDTO;
-import com.udea.objetos_perdidos_backend.Repository.ReporteAdminProjection;
-import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class ReportePerdidaService {
 
     private static final int ESTADO_REPORTE_PENDIENTE = 6;
-    private static final int ESTADO_REPORTE_RESUELTO = 7;
     private static final int ESTADO_REPORTE_ANULADO = 22;
 
     private final ReportePerdidaRepository reporteRepository;
     private final PersonaRepository personaRepository;
+    private final NotificacionService notificacionService;
 
     public ReportePerdidaService(
             ReportePerdidaRepository reporteRepository,
-            PersonaRepository personaRepository
+            PersonaRepository personaRepository,
+            NotificacionService notificacionService
     ) {
         this.reporteRepository = reporteRepository;
         this.personaRepository = personaRepository;
+        this.notificacionService = notificacionService;
     }
 
+    @Transactional
     public ReportePerdida crearReporte(ReportePerdidaRequest request) {
         Persona persona = personaRepository
                 .findByCorreo(request.getCorreoUsuario().toLowerCase().trim())
@@ -42,8 +47,21 @@ public class ReportePerdidaService {
         reporte.setIdPersona(persona.getId());
         reporte.setIdEstado(ESTADO_REPORTE_PENDIENTE);
 
-        return reporteRepository.save(reporte);
+        ReportePerdida reporteGuardado = reporteRepository.save(reporte);
+
+        String mensajeAdmin = "Nuevo reporte de pérdida registrado por " +
+                persona.getCorreo() +
+                ". Descripción: " +
+                request.getDescripcionObjeto();
+
+        notificacionService.crearNotificacionParaAdminsConFallback(
+        mensajeAdmin,
+        persona.getId()
+        );
+
+        return reporteGuardado;
     }
+
     public List<ReporteAdminDTO> listarReportesAdmin() {
         List<ReporteAdminProjection> reportes = reporteRepository.listarReportesAdmin();
 
@@ -62,7 +80,8 @@ public class ReportePerdidaService {
     }
 
     public List<ReporteAdminDTO> listarReportesUsuario(String correo) {
-        List<ReporteAdminProjection> reportes = reporteRepository.listarReportesUsuario(correo.toLowerCase().trim());
+        List<ReporteAdminProjection> reportes =
+                reporteRepository.listarReportesUsuario(correo.toLowerCase().trim());
 
         return reportes.stream()
                 .map(r -> new ReporteAdminDTO(
@@ -78,6 +97,7 @@ public class ReportePerdidaService {
                 .toList();
     }
 
+    @Transactional
     public ReportePerdida anularReporte(Integer id) {
         ReportePerdida reporte = reporteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reporte no encontrado"));

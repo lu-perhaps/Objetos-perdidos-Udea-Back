@@ -23,8 +23,14 @@ public class NotificacionController {
         return notificacionService.listarPorCorreo(correo);
     }
 
-    @PutMapping("/{id}/leer")
+    @PutMapping("/{id}/leida")
     public Notificacion marcarComoLeida(@PathVariable Integer id) {
+        return notificacionService.marcarComoLeida(id);
+    }
+
+    // Alias por si alguna pantalla vieja llama /leer
+    @PutMapping("/{id}/leer")
+    public Notificacion marcarComoLeidaAlias(@PathVariable Integer id) {
         return notificacionService.marcarComoLeida(id);
     }
 
@@ -33,8 +39,8 @@ public class NotificacionController {
         notificacionService.borrarNotificacion(id);
     }
 
-    @DeleteMapping("/persona/{correo}")
-    public void borrarNotificacionesPorCorreo(@PathVariable String correo) {
+    @DeleteMapping("/usuario/{correo}")
+    public void borrarTodasPorCorreo(@PathVariable String correo) {
         notificacionService.borrarNotificacionesPorCorreo(correo);
     }
 }

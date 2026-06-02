@@ -44,7 +44,10 @@ public class SolicitudReclamoController {
     public SolicitudReclamo rechazarSolicitud(@PathVariable Integer id) {
         return solicitudService.rechazarSolicitud(id);
     }
-
+    @PutMapping("/{id}/cancelar-aprobacion")
+    public SolicitudReclamo cancelarAprobacion(@PathVariable Integer id) {
+        return solicitudService.cancelarAprobacion(id);
+    }
     @PutMapping("/{id}/anular")
     public SolicitudReclamo anularSolicitud(@PathVariable Integer id) {
         return solicitudService.anularSolicitud(id);

@@ -1,5 +1,6 @@
 package com.udea.objetos_perdidos_backend.Service;
 
+import com.udea.objetos_perdidos_backend.Dto.EntregarSolicitudRequest;
 import com.udea.objetos_perdidos_backend.Dto.SolicitudAdminDTO;
 import com.udea.objetos_perdidos_backend.Dto.SolicitudReclamoRequest;
 import com.udea.objetos_perdidos_backend.Model.EntregaObjeto;
@@ -7,14 +8,15 @@ import com.udea.objetos_perdidos_backend.Model.Objeto;
 import com.udea.objetos_perdidos_backend.Model.Persona;
 import com.udea.objetos_perdidos_backend.Model.Publicacion;
 import com.udea.objetos_perdidos_backend.Model.SolicitudReclamo;
-import com.udea.objetos_perdidos_backend.Dto.EntregarSolicitudRequest;
 import com.udea.objetos_perdidos_backend.Repository.EntregaObjetoRepository;
 import com.udea.objetos_perdidos_backend.Repository.ObjetoRepository;
 import com.udea.objetos_perdidos_backend.Repository.PersonaRepository;
 import com.udea.objetos_perdidos_backend.Repository.PublicacionRepository;
 import com.udea.objetos_perdidos_backend.Repository.SolicitudAdminProjection;
 import com.udea.objetos_perdidos_backend.Repository.SolicitudReclamoRepository;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,8 +29,12 @@ public class SolicitudReclamoService {
     private static final int ESTADO_RECHAZADO = 10;
     private static final int ESTADO_ENTREGADO = 2;
     private static final int ESTADO_ANULADO = 13;
+
     private static final int ESTADO_OBJETO_EN_CUSTODIA = 1;
     private static final int ESTADO_OBJETO_ENTREGADO = 2;
+    private static final int ESTADO_OBJETO_DISPONIBLE = 3;
+
+    private static final int ESTADO_PUBLICACION_PUBLICADA = 11;
     private static final int ESTADO_PUBLICACION_OCULTA = 12;
 
     private final SolicitudReclamoRepository solicitudRepository;
@@ -36,25 +42,35 @@ public class SolicitudReclamoService {
     private final ObjetoRepository objetoRepository;
     private final PublicacionRepository publicacionRepository;
     private final EntregaObjetoRepository entregaObjetoRepository;
+    private final NotificacionService notificacionService;
+    private final JdbcTemplate jdbcTemplate;
 
     public SolicitudReclamoService(
             SolicitudReclamoRepository solicitudRepository,
             PersonaRepository personaRepository,
             ObjetoRepository objetoRepository,
             PublicacionRepository publicacionRepository,
-            EntregaObjetoRepository entregaObjetoRepository
+            EntregaObjetoRepository entregaObjetoRepository,
+            NotificacionService notificacionService,
+            JdbcTemplate jdbcTemplate
     ) {
         this.solicitudRepository = solicitudRepository;
         this.personaRepository = personaRepository;
         this.objetoRepository = objetoRepository;
         this.publicacionRepository = publicacionRepository;
         this.entregaObjetoRepository = entregaObjetoRepository;
+        this.notificacionService = notificacionService;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
+    @Transactional
     public SolicitudReclamo crearSolicitud(SolicitudReclamoRequest request) {
         Persona persona = personaRepository
                 .findByCorreo(request.getCorreoUsuario().toLowerCase().trim())
                 .orElseThrow(() -> new RuntimeException("No existe una persona con ese correo"));
+
+        Objeto objeto = objetoRepository.findById(request.getIdObjeto())
+                .orElseThrow(() -> new RuntimeException("Objeto no encontrado"));
 
         SolicitudReclamo solicitud = new SolicitudReclamo();
         solicitud.setDescripcion(request.getDescripcion());
@@ -65,10 +81,23 @@ public class SolicitudReclamoService {
         solicitud.setFechaAproxPerdida(request.getFechaAproxPerdida());
         solicitud.setIdEstado(ESTADO_PENDIENTE);
 
-        return solicitudRepository.save(solicitud);
-    }
+        SolicitudReclamo solicitudGuardada = solicitudRepository.save(solicitud);
 
-     public List<SolicitudAdminDTO> listarSolicitudesAdmin() {
+        String mensajeAdmin = "Nueva solicitud de reclamo para el objeto \"" +
+                objeto.getNombre() +
+                "\" registrada por " +
+                persona.getCorreo() +
+                ".";
+
+        notificacionService.crearNotificacionParaAdminsConFallback(
+                mensajeAdmin,
+                persona.getId()
+        );
+
+        return solicitudGuardada;
+        }
+
+    public List<SolicitudAdminDTO> listarSolicitudesAdmin() {
         List<SolicitudAdminProjection> solicitudes =
                 solicitudRepository.listarSolicitudesAdmin();
 
@@ -87,9 +116,9 @@ public class SolicitudReclamoService {
                         s.getLugar()
                 ))
                 .toList();
-}
+    }
 
-     public List<SolicitudAdminDTO> listarSolicitudesUsuario(String correo) {
+    public List<SolicitudAdminDTO> listarSolicitudesUsuario(String correo) {
         return solicitudRepository.listarSolicitudesUsuario(correo.toLowerCase().trim())
                 .stream()
                 .map(s -> new SolicitudAdminDTO(
@@ -106,39 +135,72 @@ public class SolicitudReclamoService {
                         s.getLugar()
                 ))
                 .toList();
-        }
+    }
+
+    @Transactional
     public SolicitudReclamo aprobarSolicitud(Integer id) {
         SolicitudReclamo solicitud = solicitudRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
 
-        // Cambiar solicitud a estado aprobado
-        solicitud.setIdEstado(ESTADO_APROBADO);
-        solicitudRepository.save(solicitud);
+        if (!solicitud.getIdEstado().equals(ESTADO_PENDIENTE)) {
+            throw new RuntimeException("Solo se pueden aprobar solicitudes pendientes");
+        }
 
-        // Cambiar objeto a estado en custodia
         Objeto objeto = objetoRepository.findById(solicitud.getIdObjeto())
                 .orElseThrow(() -> new RuntimeException("Objeto no encontrado"));
+
+        solicitud.setIdEstado(ESTADO_APROBADO);
+        SolicitudReclamo solicitudGuardada = solicitudRepository.save(solicitud);
+
         objeto.setIdEstado(ESTADO_OBJETO_EN_CUSTODIA);
         objetoRepository.save(objeto);
 
-        // Ocultar la publicación del objeto
-        List<Publicacion> publicaciones = publicacionRepository.findByIdObjeto(solicitud.getIdObjeto());
-        for (Publicacion publicacion : publicaciones) {
-            publicacion.setIdEstado(ESTADO_PUBLICACION_OCULTA);
-            publicacionRepository.save(publicacion);
-        }
+        ocultarPublicacionesDelObjeto(solicitud.getIdObjeto());
 
-        return solicitud;
+        String lugarCustodia = obtenerNombreLugarActual(objeto.getIdLugarActual());
+
+        String mensaje = "Tu solicitud de reclamo para el objeto \"" +
+                objeto.getNombre() +
+                "\" fue aprobada. Dirígete a " +
+                lugarCustodia +
+                " para continuar con el proceso de entrega.";
+
+        notificacionService.crearNotificacionParaPersona(
+                solicitud.getIdPersona(),
+                mensaje
+        );
+
+        return solicitudGuardada;
     }
 
+    @Transactional
     public SolicitudReclamo rechazarSolicitud(Integer id) {
         SolicitudReclamo solicitud = solicitudRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
 
+        if (!solicitud.getIdEstado().equals(ESTADO_PENDIENTE)) {
+            throw new RuntimeException("Solo se pueden rechazar solicitudes pendientes");
+        }
+
+        Objeto objeto = objetoRepository.findById(solicitud.getIdObjeto())
+                .orElseThrow(() -> new RuntimeException("Objeto no encontrado"));
+
         solicitud.setIdEstado(ESTADO_RECHAZADO);
-        return solicitudRepository.save(solicitud);
+        SolicitudReclamo solicitudGuardada = solicitudRepository.save(solicitud);
+
+        String mensaje = "Tu solicitud de reclamo para el objeto \"" +
+                objeto.getNombre() +
+                "\" fue rechazada. Los datos suministrados no coinciden con el objeto registrado.";
+
+        notificacionService.crearNotificacionParaPersona(
+                solicitud.getIdPersona(),
+                mensaje
+        );
+
+        return solicitudGuardada;
     }
 
+    @Transactional
     public SolicitudReclamo anularSolicitud(Integer id) {
         SolicitudReclamo solicitud = solicitudRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
@@ -151,53 +213,130 @@ public class SolicitudReclamoService {
         return solicitudRepository.save(solicitud);
     }
 
-    public SolicitudReclamo entregarSolicitud(Integer id, EntregarSolicitudRequest request) {
-        // Buscar la solicitud
+    @Transactional
+    public SolicitudReclamo cancelarAprobacion(Integer id) {
         SolicitudReclamo solicitud = solicitudRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
 
-        // Validar que esté aprobada
         if (!solicitud.getIdEstado().equals(ESTADO_APROBADO)) {
-            throw new RuntimeException("La solicitud no está aprobada. Estado actual: " + solicitud.getIdEstado());
+            throw new RuntimeException("Solo se puede cancelar una solicitud aprobada");
         }
 
-        // Buscar el objeto
         Objeto objeto = objetoRepository.findById(solicitud.getIdObjeto())
                 .orElseThrow(() -> new RuntimeException("Objeto no encontrado"));
 
-        // Crear registro de entrega
-        EntregaObjeto entrega = new EntregaObjeto();
-        entrega.setIdObjeto(solicitud.getIdObjeto());
-        entrega.setIdPersonaRecibe(solicitud.getIdPersona());
-        // Buscar administrador que entrega por correo
+        solicitud.setIdEstado(ESTADO_ANULADO);
+        SolicitudReclamo solicitudGuardada = solicitudRepository.save(solicitud);
+
+        objeto.setIdEstado(ESTADO_OBJETO_DISPONIBLE);
+        objetoRepository.save(objeto);
+
+        republicarObjeto(solicitud.getIdObjeto());
+
+        String mensaje = "La aprobación de tu solicitud para el objeto \"" +
+                objeto.getNombre() +
+                "\" fue cancelada porque el proceso de entrega no se completó. " +
+                "El objeto volvió a estar disponible en el sistema.";
+
+        notificacionService.crearNotificacionParaPersona(
+                solicitud.getIdPersona(),
+                mensaje
+        );
+
+        return solicitudGuardada;
+    }
+
+    @Transactional
+    public SolicitudReclamo entregarSolicitud(Integer id, EntregarSolicitudRequest request) {
+        SolicitudReclamo solicitud = solicitudRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
+
+        if (!solicitud.getIdEstado().equals(ESTADO_APROBADO)) {
+            throw new RuntimeException(
+                    "La solicitud no está aprobada. Estado actual: " + solicitud.getIdEstado()
+            );
+        }
+
+        Objeto objeto = objetoRepository.findById(solicitud.getIdObjeto())
+                .orElseThrow(() -> new RuntimeException("Objeto no encontrado"));
+
         Persona admin = personaRepository
                 .findByCorreo(request.getCorreoAdmin().toLowerCase().trim())
                 .orElseThrow(() -> new RuntimeException("Administrador no encontrado"));
+
+        EntregaObjeto entrega = new EntregaObjeto();
+        entrega.setIdObjeto(solicitud.getIdObjeto());
+        entrega.setIdPersonaRecibe(solicitud.getIdPersona());
         entrega.setIdPersonaEntrega(admin.getId());
         entrega.setIdSolicitudReclamo(id);
-        String obs = request.getObservaciones();
-        if (obs == null || obs.isBlank()) {
-            obs = "Entrega registrada desde el sistema";
+
+        String observaciones = request.getObservaciones();
+
+        if (observaciones == null || observaciones.isBlank()) {
+            observaciones = "Entrega registrada desde el sistema";
         }
-        entrega.setObservaciones(obs);
+
+        entrega.setObservaciones(observaciones);
         entrega.setFechaEntrega(LocalDateTime.now());
         entregaObjetoRepository.save(entrega);
 
-        // Cambiar objeto a estado entregado
         objeto.setIdEstado(ESTADO_OBJETO_ENTREGADO);
         objetoRepository.save(objeto);
 
-        // Cambiar solicitud a estado entregada
         solicitud.setIdEstado(ESTADO_ENTREGADO);
-        solicitudRepository.save(solicitud);
+        SolicitudReclamo solicitudGuardada = solicitudRepository.save(solicitud);
 
-        // Ocultar la publicación asociada al objeto
-        List<Publicacion> publicaciones = publicacionRepository.findByIdObjeto(solicitud.getIdObjeto());
+        ocultarPublicacionesDelObjeto(solicitud.getIdObjeto());
+
+        String mensaje = "Tu objeto \"" +
+                objeto.getNombre() +
+                "\" fue marcado como entregado. El proceso de reclamo ha finalizado.";
+
+        notificacionService.crearNotificacionParaPersona(
+                solicitud.getIdPersona(),
+                mensaje
+        );
+
+        return solicitudGuardada;
+    }
+
+    private String obtenerNombreLugarActual(Integer idLugarActual) {
+        if (idLugarActual == null) {
+            return "la oficina correspondiente";
+        }
+
+        try {
+            String lugar = jdbcTemplate.queryForObject(
+                    "SELECT nombre FROM tbl_lugar WHERE id = ?",
+                    String.class,
+                    idLugarActual
+            );
+
+            if (lugar == null || lugar.isBlank()) {
+                return "la oficina correspondiente";
+            }
+
+            return lugar;
+        } catch (Exception e) {
+            return "la oficina correspondiente";
+        }
+    }
+
+    private void ocultarPublicacionesDelObjeto(Integer idObjeto) {
+        List<Publicacion> publicaciones = publicacionRepository.findByIdObjeto(idObjeto);
+
         for (Publicacion publicacion : publicaciones) {
             publicacion.setIdEstado(ESTADO_PUBLICACION_OCULTA);
             publicacionRepository.save(publicacion);
         }
+    }
 
-        return solicitud;
+    private void republicarObjeto(Integer idObjeto) {
+        List<Publicacion> publicaciones = publicacionRepository.findByIdObjeto(idObjeto);
+
+        for (Publicacion publicacion : publicaciones) {
+            publicacion.setIdEstado(ESTADO_PUBLICACION_PUBLICADA);
+            publicacionRepository.save(publicacion);
+        }
     }
 }

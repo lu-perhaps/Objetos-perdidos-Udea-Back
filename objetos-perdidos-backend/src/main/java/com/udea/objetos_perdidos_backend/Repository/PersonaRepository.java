@@ -11,6 +11,8 @@ public interface PersonaRepository extends JpaRepository<Persona, Integer> {
 
     Optional<Persona> findByCorreo(String correo);
 
+    List<Persona> findByIdRol(Integer idRol);
+
     @Query(value = """
             SELECT
                 p.id AS id,
